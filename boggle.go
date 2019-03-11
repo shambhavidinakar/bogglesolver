@@ -87,6 +87,7 @@ func checkDictionary(word string) {
 }
 
 func main() {
+	createDictionary()
 	fmt.Println("Starting web server...")
 	r := mux.NewRouter()
 	r.HandleFunc("/getwords", GetWordsHandler)
@@ -97,6 +98,8 @@ func main() {
 //GetWordsHandler is a handler for results
 func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	//clear boggleWords for next board.
+	boggleWords := make(map[string]bool)
 	if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -111,7 +114,6 @@ func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 				entry++
 			}
 		}
-		createDictionary()
 		bogglePnC(boggleBoard)
 		var results string
 		for word, _ := range boggleWords {
