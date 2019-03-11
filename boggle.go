@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"sort"
 	"strconv"
 
 	"github.com/gorilla/mux"
@@ -99,7 +100,6 @@ func main() {
 func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	//clear boggleWords for next board.
-	boggleWords := make(map[string]bool)
 	if r.Method == "POST" {
 		if err := r.ParseForm(); err != nil {
 			fmt.Fprintf(w, "ParseForm() err: %v", err)
@@ -115,8 +115,13 @@ func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 		bogglePnC(boggleBoard)
+		var words []string
+		for w := range boggleWords {
+			words = append(words, w)
+		}
+		sort.Strings(words)
 		var results string
-		for word, _ := range boggleWords {
+		for _, word := range words {
 			results = results + "<li class=\"list-group-item\">" + word + "</li>"
 		}
 		response := p{template.HTML(results)}
@@ -124,6 +129,8 @@ func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			fmt.Println(err)
 		}
+		fmt.Println("clear the set of words")
+		boggleWords = make(map[string]bool)
 		if err := t.ExecuteTemplate(w, "results.html", response); err != nil {
 			fmt.Fprintf(w, "ExecuteTemplate() err: %v", err)
 		}
