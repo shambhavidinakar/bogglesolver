@@ -37,22 +37,23 @@ func getAllwords(boggleBoard [4][4]string, visited map[coordinate]bool, row int,
 	visited[bCoordinate] = true
 	*word = *word + boggleBoard[row][col]
 	checkDictionary(*word)
-	for boggleBoardRow := row - 1; boggleBoardRow <= row+1; boggleBoardRow++ {
-		for boggleBoardCol := col - 1; boggleBoardCol <= col+1; boggleBoardCol++ {
+	for boggleBoardRow := row - 1; boggleBoardRow <= row+1 && boggleBoardRow < 4; boggleBoardRow++ {
+		for boggleBoardCol := col - 1; boggleBoardCol <= col+1 && boggleBoardCol < 4; boggleBoardCol++ {
 			boggleWordCoordinate := coordinate{boggleBoardRow, boggleBoardCol}
-			if boggleBoardRow >= 0 && boggleBoardCol >= 0 && boggleBoardRow < 4 && boggleBoardCol < 4 && !visited[boggleWordCoordinate] {
+			if boggleBoardRow >= 0 && boggleBoardCol >= 0 && !visited[boggleWordCoordinate] {
 				getAllwords(boggleBoard, visited, boggleBoardRow, boggleBoardCol, word)
 			}
 		}
 	}
-	*word = ""
+	temp := *word
+	*word = temp[0 : len(temp)-1]
 	visited[bCoordinate] = false
 }
 
 //permutation combination of all possibilities in the board from left to right downwards
 func bogglePnC(boggleBoard [4][4]string) {
 	visited := make(map[coordinate]bool)
-	var word string = ""
+	var word string
 	for i := 0; i < 4; i++ {
 		for j := 0; j < 4; j++ {
 			getAllwords(boggleBoard, visited, i, j, &word)
@@ -82,18 +83,10 @@ func createDictionary() {
 }
 
 func checkDictionary(word string) {
+	fmt.Println(word)
 	if dictionary[word] && len(word) > 3 && !boggleWords[word] {
 		boggleWords[word] = true
 	}
-}
-
-func main() {
-	createDictionary()
-	fmt.Println("Starting web server...")
-	r := mux.NewRouter()
-	r.HandleFunc("/getwords", GetWordsHandler)
-	r.PathPrefix("/").Handler(http.FileServer(http.Dir(staticDir)))
-	http.ListenAndServe(":"+port, r)
 }
 
 //GetWordsHandler is a handler for results
@@ -135,4 +128,13 @@ func GetWordsHandler(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprintf(w, "ExecuteTemplate() err: %v", err)
 		}
 	}
+}
+
+func main() {
+	createDictionary()
+	fmt.Println("Starting web server...")
+	r := mux.NewRouter()
+	r.HandleFunc("/getwords", GetWordsHandler)
+	r.PathPrefix("/").Handler(http.FileServer(http.Dir(staticDir)))
+	http.ListenAndServe(":"+port, r)
 }
