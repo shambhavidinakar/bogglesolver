@@ -83,7 +83,6 @@ func createDictionary() {
 }
 
 func checkDictionary(word string) {
-	fmt.Println(word)
 	if dictionary[word] && len(word) > 3 && !boggleWords[word] {
 		boggleWords[word] = true
 	}
